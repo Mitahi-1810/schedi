@@ -11,8 +11,8 @@ class AvailabilityChart:
         self.df = pd.read_csv(csv_file)
         self.df['Time'] = self.df['Time'].apply(eval)
         self.time_slots = [f'{str(i % 12 if i % 12 != 0 else 12)} {"AM" if i < 12 else "PM"} - {str((i+1) % 12 if (i+1) % 12 != 0 else 12)} {"AM" if i+1 < 12 else "PM"}' for i in range(24)]
-        self.API_KEY = '65kMceIWRfWZRZx4A3r4Sw'
-        self.API_SEC = '5TgrFEvjTvaOpA0witR3hg'
+        self.API_KEY = 'uUvGKdJzToGCC2HBxHFwXQ'
+        self.API_SEC = 'b4LeS1jeRUWyY75bz7ARM6HOU2Tvd3NX'
 
     def generateToken(self):
         token = jwt.encode(
@@ -62,3 +62,9 @@ if st.button("Schedule Zoom Meeting"):
         st.write(f"Meeting link: {meeting_info['join_url']}")
     else:
         st.write("Failed to create the meeting. Please check your Zoom API credentials and meeting details.")
+
+
+
+
+# hBqGpbIAQqmF2MfqnhaZOQ
+# verification token: UK5R2mLdQGOCyhuWoG6Axw
