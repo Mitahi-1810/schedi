@@ -3,5 +3,4 @@ pandas
 plotly
 streamlit
 jwt
-json
 requests
