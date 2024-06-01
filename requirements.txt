@@ -1,4 +1,4 @@
 pymongo
 pandas
 plotly
-
+streamlit
