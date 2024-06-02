@@ -6,7 +6,7 @@ from Home import app
 class AvailabilityChart:
     def __init__(self, csv_file):
         self.df = pd.read_csv(csv_file)
-        self.df['Time'] = self.df['Time'].apply(eval)
+        self.df['Time'] = self.df['Time'].astype(str).apply(eval)
         self.time_slots = [f'{str(i % 12 if i % 12 != 0 else 12)} {"AM" if i < 12 else "PM"} - {str((i+1) % 12 if (i+1) % 12 != 0 else 12)} {"AM" if i+1 < 12 else "PM"}' for i in range(24)]
         self.teamCollection = app.get_team_collection()
 

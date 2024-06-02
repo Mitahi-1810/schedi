@@ -14,20 +14,24 @@ class TeamApp:
     def generate_code(k, choices):
         return ''.join(random.choices(choices, k=k))
 
+    def get_team_collection(self):
+        return self.teamCollection
     def ping(self):
         try:
             self.client.admin.command('ping')
-            print("Pinged your deployment. You successfully connected to MongoDB!")
+            #print("Pinged your deployment. You successfully connected to MongoDB!")
         except Exception as e:
             print(e)
 
     def create_team(self, team_name):
         if team_name:
             joining_code = self.generate_code(6, string.ascii_uppercase + string.digits)
-            team_data = {"team_name": team_name, "joining_code": joining_code}
+            admin_code = self.generate_code(4, string.digits)
+            team_data = {"team_name": team_name, 'admin_code': admin_code,"joining_code": joining_code}
             self.teamCollection.insert_one(team_data)
             st.write(f"Team '{team_name}' created successfully!")
             st.write(f"Joining code: {joining_code}")
+            st.write(f"Admin code: {admin_code}")
 
     def join_team(self, joining_code_input, member_name):
         if member_name and joining_code_input:
@@ -36,13 +40,13 @@ class TeamApp:
                 member_id = self.generate_code(4, string.digits)
                 self.teamCollection.update_one({"_id": team["_id"]}, {"$push": {"members": {"id": member_id, "name": member_name, "preference": {}}}})
                 st.write(f"Successfully added '{member_name}' to the team: {team['team_name']}")
+                st.write(f"Your ID: {member_id}")
             else:
                 st.write("Invalid joining code.")
 
 # Initialize the app
 app = TeamApp("mongodb+srv://kmmahi1810:mahi150KM@cluster0.nxwyefr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 
-# Display the logo image
 st.image('test4.jpg')
 
 # Ping the MongoDB server
