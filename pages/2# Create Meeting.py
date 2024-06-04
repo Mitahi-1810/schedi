@@ -2,15 +2,15 @@ import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
 from Home import app
+import uuid
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import uuid
 
 class AvailabilityChart:
     def __init__(self, csv_file):
         self.df = pd.read_csv(csv_file)
-        self.df['Time'] = self.df['Time'].apply(lambda x: eval(x) if pd.notnull(x) else {})
+        self.df['Time'] = self.df['Time'].astype(str).apply(eval)
         self.time_slots = [f'{str(i % 12 if i % 12 != 0 else 12)} {"AM" if i < 12 else "PM"} - {str((i+1) % 12 if (i+1) % 12 != 0 else 12)} {"AM" if i+1 < 12 else "PM"}' for i in range(24)]
         self.teamCollection = app.get_team_collection()
 
@@ -39,7 +39,7 @@ class AvailabilityChart:
             yaxis_title="Time Slots",
             title="Availability Chart"
         )
-        fig.update_layout(autosize=True, width=800, height=500)
+        fig.update_layout(autosize=False, width=800, height=500)
         st.plotly_chart(fig)
 
     def get_best_time(self, availability):
@@ -47,21 +47,6 @@ class AvailabilityChart:
         best_participants = self.df[(self.df['Time'].apply(lambda x: best_time in x.get(day_of_week, []))) & (self.df['Team Code'] == team_code)]['Member Name'].tolist()
         return best_time, best_participants
 
-    def send_email(self, recipients, meeting_link):
-        # Set up your SMTP server here
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login("mmahi2330150@bsds.uiu.ac.bd", "Mitahi420#UIU")
-        msg = MIMEMultipart()
-        msg['From'] = "mmahi2330150@bsds.uiu.ac.bd"
-        msg['Subject'] = "Meeting Link"
-        body = f"Here is your meeting link: {meeting_link}"
-        msg.attach(MIMEText(body, 'plain'))
-        text = msg.as_string()
-        for recipient in recipients:
-            server.sendmail("mmahi2330150@bsds.uiu.ac.bd", recipient, text)
-        server.quit()
-    
     def create_meeting_link(self):
         # Generate a unique room name
         room_name = str(uuid.uuid4())
@@ -69,16 +54,27 @@ class AvailabilityChart:
         meeting_link = f"https://meet.jit.si/{room_name}"
         return meeting_link
 
+    def send_email(self, recipients, meeting_link, meeting_time):
+    # Set up your SMTP server here
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login("team.schedi@gmail.com", "cxvjmjvcxpxycqew")
+        msg = MIMEMultipart()
+        msg['From'] = "team.schedi@gmail.com"
+        msg['Subject'] = "Meeting Link"
+        body = f"Hey There! A meeting has been scheduled at {meeting_time} for each member of your team.\n\nHere is the meeting link: {meeting_link}\n\nRegards,\nTeam Schedi"
+        msg.attach(MIMEText(body, 'plain'))
+        text = msg.as_string()
+        for recipient in recipients:
+            server.sendmail("team.schedi@gmail.com", recipient, text)
+        server.quit()
+
+
 chart = AvailabilityChart('preferences.csv')
 selected_date = st.date_input("Select a date:")
 day_of_week = selected_date.strftime('%A')
 team_code = st.text_input("Enter Team code:")
 admin_code = st.text_input("Enter Admin code:")
-
-# Initialize best_time, best_participants, and selected_participants
-best_time = None
-best_participants = []
-selected_participants = []
 
 if st.button("Show Chart") and chart.get_team_info(admin_code):
     availability = chart.get_availability(team_code, day_of_week)
@@ -87,14 +83,13 @@ if st.button("Show Chart") and chart.get_team_info(admin_code):
     st.write(f"The best time for the meeting is: {best_time}")
     st.write(f"The participants available at this time are: {best_participants}")
 
-# Check if best_time is not None before using it in st.selectbox
-if best_time is not None:
-    selected_time = st.selectbox("Select a time:", chart.time_slots, index=chart.time_slots.index(best_time))
-    selected_participants = chart.df[(chart.df['Time'].apply(lambda x: selected_time in x.get(day_of_week, []))) & (chart.df['Team Code'] == team_code)]['Member Name'].tolist()
-    st.write(f"The participants available at your selected time ({selected_time}) are: {selected_participants}")
 
 if st.button("Create Meeting"):
     # Generate your Jitsi meeting link here
+    availability = chart.get_availability(team_code, day_of_week)
+    best_time, best_participants = chart.get_best_time(availability)
     meeting_link = chart.create_meeting_link()
-    chart.send_email(chart.df[chart.df['Member Name'].isin(selected_participants)]['Email'].tolist(), meeting_link)
-    st.write(f"A meeting has been scheduled at {selected_time}. The meeting link has been sent to all selected participants.")
+    # Send email to all team members
+    team_emails = chart.df[chart.df['Team Code'] == team_code]['Email'].tolist()
+    chart.send_email(team_emails, meeting_link, best_time)
+    st.write(f"A meeting has been scheduled at {best_time}. The meeting link is: {meeting_link}. An email containing meeting details has been sent to all of your team members. ")

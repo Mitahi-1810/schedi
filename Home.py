@@ -33,12 +33,12 @@ class TeamApp:
             st.write(f"Joining code: {joining_code}")
             st.write(f"Admin code: {admin_code}")
 
-    def join_team(self, joining_code_input, member_name):
-        if member_name and joining_code_input:
+    def join_team(self, joining_code_input, member_name, member_mail):
+        if member_name and joining_code_input and member_mail:
             team = self.teamCollection.find_one({"joining_code": joining_code_input})
             if team:
                 member_id = self.generate_code(4, string.digits)
-                self.teamCollection.update_one({"_id": team["_id"]}, {"$push": {"members": {"id": member_id, "name": member_name, "preference": {}}}})
+                self.teamCollection.update_one({"_id": team["_id"]}, {"$push": {"members": {"id": member_id, "name": member_name, "mail": member_mail, "preference": {}}}})
                 st.write(f"Successfully added '{member_name}' to the team: {team['team_name']}")
                 st.write(f"Your ID: {member_id}")
             else:
@@ -63,8 +63,9 @@ if st.button("Create Team"):
 with st.form(key='join_team_form'):
     st.write("Join a team")
     joining_code_input = st.text_input("Enter joining code:")
-    member_name = st.text_input("Enter member name:")
+    member_name = st.text_input("Enter your name:")
+    member_mail = st.text_input("Enter your email:")
     submit_button = st.form_submit_button(label='Join Team')
 
     if submit_button:
-        app.join_team(joining_code_input, member_name)
+        app.join_team(joining_code_input, member_name, member_mail)

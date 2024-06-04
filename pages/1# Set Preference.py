@@ -30,7 +30,8 @@ class PreferenceForm:
         data = {
             'Team Code': [team_code],
             'Member Name': [member['name']],
-            'Member Id': [member['id']],
+            'Email': [member['mail']],
+            'Member Id': [member['id']],'Member Id': [member['id']],
             "Time": [preferences]
         }
         df = pd.DataFrame(data)
