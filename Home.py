@@ -47,7 +47,7 @@ class TeamApp:
 # Initialize the app
 app = TeamApp("mongodb+srv://kmmahi1810:mahi150KM@cluster0.nxwyefr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 
-st.image('test4.jpg')
+st.image('Schedi Logo.jpg')
 
 # Ping the MongoDB server
 app.ping()
